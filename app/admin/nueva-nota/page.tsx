@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
+import ImageUploader from '@/components/admin/ImageUploader';
+import Autonota from '@/components/admin/Autonota';
 import { CATEGORIAS } from '@/lib/types';
 
 type FormData = {
@@ -23,6 +25,11 @@ export default function NuevaNotaPage() {
 
   function set(key: keyof FormData, value: string | boolean) {
     setForm(f => ({ ...f, [key]: value }));
+  }
+
+  function onAutonota(data: { titulo: string; bajada: string; cuerpo: string }) {
+    setForm(f => ({ ...f, titulo: data.titulo, bajada: data.bajada, cuerpo: data.cuerpo }));
+    setPreview(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -47,18 +54,24 @@ export default function NuevaNotaPage() {
   return (
     <AdminLayout>
       <div className="max-w-4xl mx-auto px-4 py-10">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <h1 className="font-display text-2xl text-tinta">Nueva nota</h1>
           <button onClick={() => setPreview(!preview)} className="text-sm border border-azul text-azul px-4 py-2 rounded hover:bg-azul hover:text-white transition-colors">
-            {preview ? 'Editar' : 'Vista previa'}
+            {preview ? '← Editar' : '👁 Vista previa'}
           </button>
         </div>
 
         {status === 'ok' && <Alert type="ok">✓ Nota publicada. Redirigiendo...</Alert>}
         {status === 'error' && <Alert type="error">✗ Error al publicar. Intentá de nuevo.</Alert>}
 
-        {preview ? <PreviewPanel form={form} /> : (
+        {preview ? (
+          <PreviewPanel form={form} />
+        ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+
+            {/* Autonota */}
+            <Autonota onGenerar={onAutonota} />
+
             <Card title="Título *">
               <input type="text" value={form.titulo} onChange={e => set('titulo', e.target.value)}
                 placeholder="Escribí el título..." required
@@ -68,7 +81,7 @@ export default function NuevaNotaPage() {
 
             <Card title="Bajada">
               <textarea value={form.bajada} onChange={e => set('bajada', e.target.value)}
-                placeholder="Resumen breve..." rows={2}
+                placeholder="Resumen breve de la nota..." rows={2}
                 className="w-full border-2 border-gris-claro rounded px-3 py-2 focus:border-azul outline-none resize-none text-sm transition-colors" />
             </Card>
 
@@ -105,14 +118,8 @@ export default function NuevaNotaPage() {
               </Card>
             </div>
 
-            <Card title="Imagen (URL)">
-              <input type="url" value={form.imagen_url} onChange={e => set('imagen_url', e.target.value)}
-                placeholder="https://..."
-                className="w-full border-2 border-gris-claro rounded px-3 py-2.5 focus:border-azul outline-none text-sm transition-colors" />
-              {form.imagen_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={form.imagen_url} alt="" className="mt-3 rounded h-28 object-cover w-full" onError={e => (e.currentTarget.style.display='none')} />
-              )}
+            <Card title="Imagen destacada">
+              <ImageUploader value={form.imagen_url} onChange={url => set('imagen_url', url)} />
             </Card>
 
             <Card title="Video YouTube (opcional)">
@@ -166,7 +173,7 @@ function PreviewPanel({ form }: { form: FormData }) {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={form.imagen_url} alt="" className="rounded w-full object-cover mb-6 max-h-64" />
       )}
-      <div className="prose-nota text-sm whitespace-pre-line">{form.cuerpo || 'Cuerpo de la nota...'}</div>
+      <div className="prose-nota text-sm whitespace-pre-line">{form.cuerpo || 'Cuerpo...'}</div>
     </div>
   );
 }

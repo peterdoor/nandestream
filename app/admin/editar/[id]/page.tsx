@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
+import ImageUploader from '@/components/admin/ImageUploader';
 import { CATEGORIAS } from '@/lib/types';
 
 type FormData = {
@@ -58,7 +59,7 @@ export default function EditarNotaPage() {
 
   if (!form) return (
     <AdminLayout>
-      <div className="flex items-center justify-center py-20 text-gris-medio">Cargando nota...</div>
+      <div className="flex items-center justify-center py-20 text-gris-medio">Cargando...</div>
     </AdminLayout>
   );
 
@@ -69,11 +70,11 @@ export default function EditarNotaPage() {
           <h1 className="font-display text-2xl text-tinta">Editar nota</h1>
           <button onClick={handleDelete} disabled={deleting}
             className="text-sm text-red-500 border border-red-200 hover:bg-red-500 hover:text-white px-4 py-2 rounded transition-colors disabled:opacity-50">
-            {deleting ? 'Eliminando...' : 'Eliminar nota'}
+            {deleting ? 'Eliminando...' : '🗑 Eliminar'}
           </button>
         </div>
 
-        {status === 'ok' && <Alert type="ok">✓ Nota actualizada. Redirigiendo...</Alert>}
+        {status === 'ok' && <Alert type="ok">✓ Guardado. Redirigiendo...</Alert>}
         {status === 'error' && <Alert type="error">✗ Error al guardar. Intentá de nuevo.</Alert>}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -113,18 +114,13 @@ export default function EditarNotaPage() {
                   className={`w-12 h-6 rounded-full relative transition-colors ${form.destacado ? 'bg-rojo' : 'bg-gris-medio'}`}>
                   <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${form.destacado ? 'left-7' : 'left-1'}`} />
                 </div>
-                <span className="text-sm">{form.destacado ? '★ Aparece en portada' : '☆ Solo en la sección'}</span>
+                <span className="text-sm">{form.destacado ? '★ En portada' : '☆ Solo en sección'}</span>
               </label>
             </Card>
           </div>
 
-          <Card title="Imagen (URL)">
-            <input type="url" value={form.imagen_url} onChange={e => set('imagen_url', e.target.value)}
-              placeholder="https://..." className="w-full border-2 border-gris-claro rounded px-3 py-2.5 focus:border-azul outline-none text-sm transition-colors" />
-            {form.imagen_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={form.imagen_url} alt="" className="mt-3 rounded h-28 object-cover w-full" onError={e => (e.currentTarget.style.display='none')} />
-            )}
+          <Card title="Imagen destacada">
+            <ImageUploader value={form.imagen_url} onChange={url => set('imagen_url', url)} />
           </Card>
 
           <Card title="Video YouTube (opcional)">
