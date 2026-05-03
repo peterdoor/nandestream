@@ -1,5 +1,7 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { CATEGORIAS } from '@/lib/types';
 
 type FormData = {
@@ -30,6 +32,7 @@ export default function NuevaNotaPage() {
   const [form, setForm] = useState<FormData>(EMPTY);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
   const [preview, setPreview] = useState(false);
+  const router = useRouter();
 
   function set(key: keyof FormData, value: string | boolean) {
     setForm(f => ({ ...f, [key]: value }));
@@ -49,7 +52,10 @@ export default function NuevaNotaPage() {
     if (res.ok) {
       setStatus('ok');
       setForm(EMPTY);
-      setTimeout(() => setStatus('idle'), 4000);
+      setTimeout(() => {
+        setStatus('idle');
+        router.push('/admin/notas');
+      }, 1500);
     } else {
       setStatus('error');
       setTimeout(() => setStatus('idle'), 4000);
@@ -65,9 +71,17 @@ export default function NuevaNotaPage() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M4 4l16 8-16 8V4z"/></svg>
           </div>
           <span className="font-display font-bold">Ñande Stream</span>
-          <span className="text-white/40 text-sm">/ Panel</span></div><div className="flex items-center gap-4"><Link href="/admin/notas" className="text-white/70 hover:text-white text-sm transition-colors">Notas publicadas</Link>
+          <span className="text-white/40 text-sm">/ Nueva nota</span>
         </div>
-        <a href="/" className="text-white/60 text-sm hover:text-white transition-colors">← Ver sitio</a>
+        <div className="flex items-center gap-4">
+          <Link href="/admin/notas" className="text-white/70 hover:text-white text-sm transition-colors">
+            Notas publicadas
+          </Link>
+          <Link href="/admin" className="text-white/70 hover:text-white text-sm transition-colors">
+            Panel
+          </Link>
+          <a href="/" className="text-white/60 text-sm hover:text-white transition-colors">← Ver sitio</a>
+        </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-10">
@@ -81,10 +95,9 @@ export default function NuevaNotaPage() {
           </button>
         </div>
 
-        {/* Feedback */}
         {status === 'ok' && (
           <div className="bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded mb-6 text-sm font-medium">
-            ✓ Nota publicada correctamente. Estará visible en el sitio en menos de 1 minuto.
+            ✓ Nota publicada correctamente. Redirigiendo...
           </div>
         )}
         {status === 'error' && (
@@ -97,7 +110,6 @@ export default function NuevaNotaPage() {
           <PreviewPanel form={form} />
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            {/* Título */}
             <Card title="Título de la nota *">
               <input
                 type="text"
@@ -110,22 +122,17 @@ export default function NuevaNotaPage() {
               <p className="text-xs text-gris-medio mt-1">{form.titulo.length}/120 caracteres</p>
             </Card>
 
-            {/* Bajada */}
             <Card title="Bajada / Descripción breve">
               <textarea
                 value={form.bajada}
                 onChange={e => set('bajada', e.target.value)}
-                placeholder="Resumen de 1-2 oraciones para el listado y redes sociales..."
+                placeholder="Resumen de 1-2 oraciones..."
                 rows={2}
                 className="w-full border-2 border-gris-claro rounded px-3 py-2 focus:border-azul outline-none resize-none placeholder:text-gris-medio text-sm transition-colors"
               />
             </Card>
 
-            {/* Cuerpo */}
             <Card title="Cuerpo de la nota *">
-              <p className="text-xs text-gris-medio mb-2">
-                Podés usar: **negrita**, saltos de línea, y pegar texto directamente desde Word o Google Docs.
-              </p>
               <textarea
                 value={form.cuerpo}
                 onChange={e => set('cuerpo', e.target.value)}
@@ -136,7 +143,6 @@ export default function NuevaNotaPage() {
               />
             </Card>
 
-            {/* Meta */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card title="Categoría *">
                 <select
@@ -185,25 +191,20 @@ export default function NuevaNotaPage() {
               </Card>
             </div>
 
-            {/* Imagen */}
             <Card title="Imagen destacada">
               <input
                 type="url"
                 value={form.imagen_url}
                 onChange={e => set('imagen_url', e.target.value)}
-                placeholder="https://drive.google.com/... o https://cualquier-url-de-imagen.jpg"
+                placeholder="https://..."
                 className="w-full border-2 border-gris-claro rounded px-3 py-2.5 focus:border-azul outline-none text-sm transition-colors"
               />
-              <p className="text-xs text-gris-medio mt-1">
-                Pegá el link directo de la imagen. Si está en Google Drive: botón derecho → Obtener link → Cambiar a "Cualquiera con el link".
-              </p>
               {form.imagen_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={form.imagen_url} alt="preview" className="mt-3 rounded h-28 object-cover w-full" onError={e => (e.currentTarget.style.display='none')} />
               )}
             </Card>
 
-            {/* Video */}
             <Card title="Video de YouTube (opcional)">
               <input
                 type="url"
@@ -214,7 +215,6 @@ export default function NuevaNotaPage() {
               />
             </Card>
 
-            {/* Submit */}
             <div className="flex gap-4 justify-end pt-2">
               <button
                 type="button"
