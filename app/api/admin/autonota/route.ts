@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GROQ_API_KEY = process.env.GROQ_API_KEY!;
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const SYSTEM_PROMPT = `Sos un redactor periodístico del medio digital paraguayo "Ñande Stream". 
 Tu estilo es serio, institucional y profesional. Cubrís actualidad nacional, política, gobierno, 
-instituciones y desarrollo del Paraguay. 
+instituciones y desarrollo del Paraguay.
 
 Escribís notas periodísticas con:
 - Lenguaje formal pero accesible
@@ -27,8 +27,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
 
-  if (!GEMINI_API_KEY) {
-    return NextResponse.json({ error: 'API de IA no configurada. Agregá GEMINI_API_KEY en Vercel.' }, { status: 503 });
+  if (!GROQ_API_KEY) {
+    return NextResponse.json({ error: 'API de IA no configurada. Agregá GROQ_API_KEY en Vercel.' }, { status: 503 });
   }
 
   const { tema, datos } = await req.json();
@@ -39,39 +39,37 @@ export async function POST(req: NextRequest) {
   const prompt = `Generá una nota periodística sobre: "${tema}"${datos ? `\n\nDatos adicionales: ${datos}` : ''}`;
 
   try {
-    const res = await fetch(GEMINI_URL, {
+    const res = await fetch(GROQ_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+      },
       body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: SYSTEM_PROMPT }] },
-          { role: 'model', parts: [{ text: 'Entendido. Generaré notas periodísticas en el estilo de Ñande Stream.' }] },
-          { role: 'user', parts: [{ text: prompt }] },
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: prompt },
         ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1500,
-        },
+        temperature: 0.7,
+        max_tokens: 1500,
       }),
     });
 
     if (!res.ok) {
       const err = await res.text();
-      console.error('Gemini error:', err);
+      console.error('Groq error:', err);
       return NextResponse.json({ error: 'Error en el servicio de IA' }, { status: 500 });
     }
 
     const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-
-    // Limpiar posibles markdown fences
+    const text = data.choices?.[0]?.message?.content ?? '';
     const clean = text.replace(/```json|```/g, '').trim();
 
     let parsed;
     try {
       parsed = JSON.parse(clean);
     } catch {
-      // Si no viene como JSON, intentar extraer el contenido
       return NextResponse.json({ error: 'La IA no devolvió el formato esperado. Intentá de nuevo.' }, { status: 500 });
     }
 
