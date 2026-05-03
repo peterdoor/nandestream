@@ -145,3 +145,79 @@ function rowToNota(row: Record<string, unknown>): Nota {
     slug:       String(row.slug ?? ''),
   };
 }
+
+// ─── CONFIGURACIÓN DEL SITIO ──────────────────────────────────────────────────
+
+export type SiteConfig = {
+  frase_hero: string;
+  youtube_live_id: string;
+  stream_activo: boolean;
+  ticker_extra: string;
+  youtube_url: string;
+  facebook_url: string;
+  tiktok_url: string;
+  instagram_url: string;
+  whatsapp_url: string;
+};
+
+const DEFAULT_CONFIG: SiteConfig = {
+  frase_hero: 'Información que construye el Paraguay',
+  youtube_live_id: '',
+  stream_activo: false,
+  ticker_extra: '',
+  youtube_url: '',
+  facebook_url: '',
+  tiktok_url: '',
+  instagram_url: '',
+  whatsapp_url: '',
+};
+
+const CONFIG_BASE = `${process.env.SUPABASE_URL}/rest/v1/config`;
+
+export async function getConfig(): Promise<SiteConfig> {
+  try {
+    const res = await fetch(`${CONFIG_BASE}?id=eq.1&limit=1`, {
+      headers: {
+        'apikey': process.env.SUPABASE_ANON_KEY!,
+        'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY!}`,
+      },
+      next: { revalidate: 60 },
+    });
+    const rows = await res.json();
+    return rows[0] ?? DEFAULT_CONFIG;
+  } catch {
+    return DEFAULT_CONFIG;
+  }
+}
+
+export async function saveConfig(data: Partial<SiteConfig>): Promise<boolean> {
+  try {
+    // Upsert — inserta si no existe, actualiza si existe
+    const res = await fetch(`${CONFIG_BASE}?id=eq.1`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': process.env.SUPABASE_SERVICE_KEY!,
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY!}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify(data),
+    });
+    if (res.status === 404 || res.status === 406) {
+      // No existe, insertar
+      const ins = await fetch(CONFIG_BASE, {
+        method: 'POST',
+        headers: {
+          'apikey': process.env.SUPABASE_SERVICE_KEY!,
+          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY!}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: 1, ...DEFAULT_CONFIG, ...data }),
+      });
+      return ins.ok;
+    }
+    return res.ok;
+  } catch {
+    return false;
+  }
+}

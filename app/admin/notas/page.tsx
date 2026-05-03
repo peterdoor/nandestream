@@ -1,99 +1,154 @@
-import { getNotas } from '@/lib/supabase';
-import { formatFecha } from '@/lib/utils';
+'use client';
+import { useState, useEffect, useCallback } from 'react';
+import AdminLayout from '@/components/admin/AdminLayout';
 import Link from 'next/link';
+import { Nota, CATEGORIAS } from '@/lib/types';
+import { formatFecha } from '@/lib/utils';
 
-export const revalidate = 0;
+export default function AdminNotasPage() {
+  const [notas, setNotas] = useState<Nota[]>([]);
+  const [filtro, setFiltro] = useState('');
+  const [categoria, setCategoria] = useState('');
+  const [loading, setLoading] = useState(true);
 
-export default async function AdminNotasPage() {
-  const notas = await getNotas();
+  const cargar = useCallback(async () => {
+    setLoading(true);
+    const res = await fetch('/api/admin/listar-notas');
+    const data = await res.json();
+    setNotas(data);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { cargar(); }, [cargar]);
+
+  async function toggleDestacado(id: string, actual: boolean) {
+    await fetch('/api/admin/toggle-destacado', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, destacado: !actual }),
+    });
+    setNotas(ns => ns.map(n => n.id === id ? { ...n, destacado: !actual } : n));
+  }
+
+  async function eliminar(id: string, titulo: string) {
+    if (!confirm(`¿Eliminar "${titulo}"? Esta acción no se puede deshacer.`)) return;
+    await fetch('/api/admin/eliminar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    setNotas(ns => ns.filter(n => n.id !== id));
+  }
+
+  const filtradas = notas.filter(n => {
+    const matchTexto = n.titulo.toLowerCase().includes(filtro.toLowerCase()) ||
+                       n.autor.toLowerCase().includes(filtro.toLowerCase());
+    const matchCat = categoria ? n.categoria === categoria : true;
+    return matchTexto && matchCat;
+  });
 
   return (
-    <div className="min-h-screen bg-gris-claro">
-      <div className="bg-azul text-white px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-rojo rounded-full flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M4 4l16 8-16 8V4z"/></svg>
-          </div>
-          <span className="font-display font-bold">Ñande Stream</span>
-          <span className="text-white/40 text-sm">/ Notas publicadas</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <a href="/" className="text-white/60 text-sm hover:text-white transition-colors">← Ver sitio</a>
+    <AdminLayout>
+      <div className="max-w-6xl mx-auto px-4 py-10">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="font-display text-2xl text-tinta">
+            Notas publicadas
+            <span className="ml-3 text-sm font-sans font-normal text-gris-medio">({filtradas.length} de {notas.length})</span>
+          </h1>
           <Link href="/admin/nueva-nota" className="bg-rojo hover:bg-rojo-oscuro text-white text-sm font-bold px-4 py-2 rounded transition-colors">
             + Nueva nota
           </Link>
         </div>
-      </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="font-display text-2xl text-tinta">
-            Notas publicadas
-            <span className="ml-3 text-sm font-sans font-normal text-gris-medio">({notas.length} total)</span>
-          </h1>
+        {/* Filtros */}
+        <div className="flex gap-3 mb-6">
+          <input
+            type="text"
+            placeholder="Buscar por título o autor..."
+            value={filtro}
+            onChange={e => setFiltro(e.target.value)}
+            className="flex-1 border-2 border-gris-claro rounded px-4 py-2 text-sm focus:border-azul outline-none transition-colors bg-white"
+          />
+          <select
+            value={categoria}
+            onChange={e => setCategoria(e.target.value)}
+            className="border-2 border-gris-claro rounded px-3 py-2 text-sm focus:border-azul outline-none bg-white transition-colors"
+          >
+            <option value="">Todas las categorías</option>
+            {CATEGORIAS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </select>
         </div>
 
-        {notas.length === 0 ? (
+        {loading ? (
+          <div className="bg-white rounded-lg p-16 text-center text-gris-medio text-sm">Cargando...</div>
+        ) : filtradas.length === 0 ? (
           <div className="bg-white rounded-lg p-16 text-center text-gris-medio border-2 border-dashed border-gris-claro">
-            <p className="text-lg mb-2">No hay notas publicadas todavía.</p>
-            <Link href="/admin/nueva-nota" className="text-rojo font-semibold hover:opacity-70 transition-opacity">
-              Cargar la primera nota →
-            </Link>
+            <p className="text-lg mb-2">{notas.length === 0 ? 'No hay notas publicadas.' : 'No hay resultados para tu búsqueda.'}</p>
+            {notas.length === 0 && (
+              <Link href="/admin/nueva-nota" className="text-rojo font-semibold hover:opacity-70">Crear la primera →</Link>
+            )}
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="grid grid-cols-12 gap-4 px-5 py-3 bg-gris-claro text-[0.68rem] font-bold uppercase tracking-wider text-gris-medio border-b border-gris-claro">
-              <div className="col-span-5">Título</div>
+            <div className="grid grid-cols-12 gap-3 px-5 py-3 bg-gris-claro text-[0.68rem] font-bold uppercase tracking-wider text-gris-medio border-b border-gris-claro">
+              <div className="col-span-4">Título</div>
               <div className="col-span-2">Categoría</div>
               <div className="col-span-2">Fecha</div>
-              <div className="col-span-1 text-center">Dest.</div>
-              <div className="col-span-2 text-center">Acciones</div>
+              <div className="col-span-1 text-center">Portada</div>
+              <div className="col-span-3 text-center">Acciones</div>
             </div>
 
-            {notas.map((nota) => (
-              <div
-                key={nota.id}
-                className="grid grid-cols-12 gap-4 px-5 py-4 items-center border-b border-gris-claro last:border-0 hover:bg-gris-claro/40 transition-colors"
-              >
-                <div className="col-span-5">
-                  <Link
-                    href={`/nota/${nota.slug}`}
-                    target="_blank"
-                    className="font-semibold text-sm text-tinta hover:text-azul transition-colors line-clamp-2 leading-snug"
-                  >
-                    {nota.titulo}
-                  </Link>
-                  {nota.bajada && (
-                    <p className="text-xs text-gris-medio mt-0.5 line-clamp-1">{nota.bajada}</p>
-                  )}
+            {filtradas.map(nota => (
+              <div key={nota.id} className="grid grid-cols-12 gap-3 px-5 py-3.5 items-center border-b border-gris-claro last:border-0 hover:bg-gris-claro/30 transition-colors">
+                <div className="col-span-4">
+                  <p className="text-sm font-semibold text-tinta line-clamp-1">{nota.titulo}</p>
+                  <p className="text-xs text-gris-medio mt-0.5 truncate">{nota.autor}</p>
                 </div>
                 <div className="col-span-2">
-                  <span className="inline-block bg-azul/10 text-azul text-[0.65rem] font-bold uppercase tracking-wide px-2 py-1 rounded">
+                  <span className="inline-block bg-azul/10 text-azul text-[0.62rem] font-bold uppercase tracking-wide px-2 py-1 rounded">
                     {nota.categoria}
                   </span>
                 </div>
-                <div className="col-span-2 text-sm text-gris-medio">
-                  {formatFecha(nota.fecha)}
+                <div className="col-span-2 text-xs text-gris-medio">{formatFecha(nota.fecha)}</div>
+                <div className="col-span-1 flex justify-center">
+                  <button
+                    onClick={() => toggleDestacado(nota.id, nota.destacado)}
+                    title={nota.destacado ? 'Quitar de portada' : 'Destacar en portada'}
+                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors text-sm ${
+                      nota.destacado
+                        ? 'bg-green-100 text-green-600 hover:bg-red-100 hover:text-red-500'
+                        : 'bg-gris-claro text-gris-medio hover:bg-green-100 hover:text-green-600'
+                    }`}
+                  >
+                    {nota.destacado ? '★' : '☆'}
+                  </button>
                 </div>
-                <div className="col-span-1 text-center">
-                  {nota.destacado
-                    ? <span className="text-green-600 font-bold">✓</span>
-                    : <span className="text-gris-medio">—</span>
-                  }
-                </div>
-                <div className="col-span-2 flex items-center justify-center gap-2">
+                <div className="col-span-3 flex items-center justify-center gap-1.5">
+                  <Link
+                    href={`/nota/${nota.slug}`}
+                    target="_blank"
+                    className="text-xs text-gris-medio hover:text-tinta px-2 py-1 transition-colors"
+                  >
+                    Ver
+                  </Link>
                   <Link
                     href={`/admin/editar/${nota.id}`}
                     className="text-xs font-semibold text-azul border border-azul/30 hover:bg-azul hover:text-white px-3 py-1.5 rounded transition-colors"
                   >
                     Editar
                   </Link>
+                  <button
+                    onClick={() => eliminar(nota.id, nota.titulo)}
+                    className="text-xs font-semibold text-red-400 border border-red-200 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded transition-colors"
+                  >
+                    Borrar
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 }
