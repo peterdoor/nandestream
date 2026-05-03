@@ -68,7 +68,10 @@ export async function POST(req: NextRequest) {
 
     let parsed;
     try {
-      parsed = JSON.parse(clean);
+      // Intentar extraer JSON aunque venga con texto alrededor
+      const jsonMatch = clean.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('No JSON found');
+      parsed = JSON.parse(jsonMatch[0]);
     } catch {
       return NextResponse.json({ error: 'La IA no devolvió el formato esperado. Intentá de nuevo.' }, { status: 500 });
     }
