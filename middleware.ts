@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Proteger rutas /admin/* excepto /admin/login
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
     const session = req.cookies.get('admin_session');
     const validPassword = process.env.ADMIN_PASSWORD;

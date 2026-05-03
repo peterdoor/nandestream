@@ -20,7 +20,7 @@ export default function AdminLogin() {
     });
 
     if (res.ok) {
-      router.push('/admin/nueva-nota');
+      router.push('/admin');
     } else {
       setError('Contraseña incorrecta');
       setLoading(false);
@@ -30,7 +30,6 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-azul flex items-center justify-center px-4">
       <div className="bg-crema rounded-lg p-8 w-full max-w-sm shadow-2xl">
-        {/* Logo */}
         <div className="flex items-center gap-3 mb-8 justify-center">
           <div className="w-10 h-10 bg-rojo rounded-full flex items-center justify-center">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M4 4l16 8-16 8V4z"/></svg>
@@ -53,11 +52,7 @@ export default function AdminLogin() {
               required
             />
           </div>
-
-          {error && (
-            <p className="text-rojo text-sm text-center">{error}</p>
-          )}
-
+          {error && <p className="text-rojo text-sm text-center">{error}</p>}
           <button
             type="submit"
             disabled={loading}
