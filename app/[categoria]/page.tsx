@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!cat) return {};
   return {
     title: `${cat.label} – Ñande Stream`,
-    description: `Toda la cobertura de ${cat.label} en Ñande Stream, el medio digital paraguayo.`,
+    description: `Cobertura de ${cat.label} en Ñande Stream.`,
   };
 }
 
@@ -29,25 +29,20 @@ export default async function CategoriaPage({ params }: Props) {
 
   return (
     <div className="bg-crema min-h-screen">
-      {/* Header de sección */}
-      <div className="bg-azul text-white py-10">
+      <div className="bg-azul py-8">
         <div className="max-w-7xl mx-auto px-4">
-          <p className="text-white/50 text-xs uppercase tracking-widest mb-2">Sección</p>
-          <h1 className="font-display text-4xl">{cat.label}</h1>
+          <p className="text-white/40 text-[0.62rem] uppercase tracking-widest mb-1">Sección</p>
+          <h1 className="font-display text-3xl text-white">{cat.label}</h1>
         </div>
       </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-4 py-10">
         {notas.length === 0 ? (
           <div className="text-center py-20 text-gris-medio">
-            <p className="text-lg">No hay notas publicadas en esta sección todavía.</p>
-            <p className="text-sm mt-2">Volvé pronto o explorá otras secciones.</p>
+            <p className="text-lg">No hay notas en esta sección todavía.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {notas.map(n => (
-              <NewsCard key={n.id} nota={n} />
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {notas.map(n => <NewsCard key={n.id} nota={n} />)}
           </div>
         )}
       </div>

@@ -2,17 +2,15 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import Ticker from '@/components/layout/Ticker';
-import WeatherBar from '@/components/layout/WeatherBar';
+import TickerWrapper from '@/components/layout/TickerWrapper';
 
 export const metadata: Metadata = {
   title: {
     default: 'Ñande Stream – Información Nacional',
     template: '%s | Ñande Stream',
   },
-  description:
-    'Espacio digital de información, análisis y conversación pública sobre la actualidad nacional, la gestión institucional, la comunidad y el desarrollo del Paraguay.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nande.stream'),
+  description: 'Canal paraguayo de streaming político e institucional. Análisis, actualidad y conversación pública sobre el Paraguay.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nandestream.com'),
   openGraph: {
     siteName: 'Ñande Stream',
     type: 'website',
@@ -24,9 +22,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <body>
-        <WeatherBar />
         <Navbar />
-        <Ticker />
+        <TickerWrapper />
         <main>{children}</main>
         <Footer />
       </body>
