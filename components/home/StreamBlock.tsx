@@ -37,7 +37,11 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
               {playing && youtube_live_id ? (
                 <iframe
                   className="w-full h-full"
-                  src={`https://www.youtube.com/embed/${youtube_live_id}?autoplay=1`}
+                  src={
+                    youtube_live_id.startsWith('UC')
+                      ? `https://www.youtube.com/embed/live_stream?channel=${youtube_live_id}&autoplay=1`
+                      : `https://www.youtube.com/embed/${youtube_live_id}?autoplay=1`
+                  }
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
