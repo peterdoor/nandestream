@@ -4,19 +4,14 @@ export default async function Ticker() {
   const notas = await getNotasRecientes(8);
   const items = notas.length > 0
     ? notas.map(n => n.titulo)
-    : [
-        'Bienvenidos a Ñande Stream',
-        'Información y análisis sobre la actualidad paraguaya',
-        'Seguinos en redes sociales',
-      ];
+    : ['Bienvenidos a Ñande Stream', 'Información y análisis sobre la actualidad paraguaya'];
 
-  // Duplicar para loop continuo
   const all = [...items, ...items];
 
   return (
     <div className="bg-rojo text-white flex items-stretch overflow-hidden h-11">
       <div className="bg-rojo-oscuro flex items-center px-5 text-[0.68rem] font-bold uppercase tracking-[0.15em] whitespace-nowrap gap-2 flex-shrink-0">
-        <span className="w-2 h-2 bg-white rounded-full" />
+        <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
         Última hora
       </div>
       <div className="overflow-hidden flex items-center flex-1">
