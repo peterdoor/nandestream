@@ -18,13 +18,14 @@ export default function Footer() {
               Canal paraguayo de streaming político e institucional. Información, análisis y conversación pública.
             </p>
             <div className="flex h-1.5 w-12 rounded overflow-hidden">
-              <span className="flex-1 bg-rojo" /><span className="flex-1 bg-white/70" /><span className="flex-1 bg-azul" />
+              <span className="flex-1 bg-rojo"/><span className="flex-1 bg-white/70"/><span className="flex-1 bg-azul"/>
             </div>
           </div>
+
           <div>
             <h4 className="text-white text-[0.7rem] uppercase tracking-widest font-bold mb-4 relative">
               Secciones
-              <span className="absolute left-0 -bottom-2 w-4 h-0.5 bg-rojo" />
+              <span className="absolute left-0 -bottom-2 w-4 h-0.5 bg-rojo"/>
             </h4>
             <ul className="flex flex-col gap-2">
               {CATEGORIAS.map(c => (
@@ -34,31 +35,32 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
           <div>
             <h4 className="text-white text-[0.7rem] uppercase tracking-widest font-bold mb-4 relative">
               El medio
-              <span className="absolute left-0 -bottom-2 w-4 h-0.5 bg-rojo" />
+              <span className="absolute left-0 -bottom-2 w-4 h-0.5 bg-rojo"/>
             </h4>
             <ul className="flex flex-col gap-2">
-              {['Quiénes somos', 'Política editorial', 'Contacto', 'Publicidad'].map(item => (
-                <li key={item}><Link href="/quienes-somos" className="text-xs hover:text-white transition-colors">{item}</Link></li>
-              ))}
+              <li><Link href="/quienes-somos" className="text-xs hover:text-white transition-colors">Quiénes somos</Link></li>
+              <li><Link href="/politica-editorial" className="text-xs hover:text-white transition-colors">Política editorial</Link></li>
+              <li><Link href="/contacto" className="text-xs hover:text-white transition-colors">Contacto</Link></li>
+              <li><Link href="/publicidad" className="text-xs hover:text-white transition-colors">Publicidad</Link></li>
             </ul>
           </div>
+
           <div>
             <h4 className="text-white text-[0.7rem] uppercase tracking-widest font-bold mb-4 relative">
               Seguinos
-              <span className="absolute left-0 -bottom-2 w-4 h-0.5 bg-rojo" />
+              <span className="absolute left-0 -bottom-2 w-4 h-0.5 bg-rojo"/>
             </h4>
             <div className="flex flex-col gap-2">
               {[
-                { label: 'YouTube',   color: 'bg-[#FF0000]', env: process.env.NEXT_PUBLIC_YT },
-                { label: 'Facebook',  color: 'bg-[#1877F2]', env: process.env.NEXT_PUBLIC_FB },
-                { label: 'TikTok',    color: 'bg-black',     env: '#' },
-                { label: 'Instagram', color: 'bg-[#E1306C]', env: '#' },
-                { label: 'WhatsApp',  color: 'bg-[#25D366]', env: process.env.NEXT_PUBLIC_WA },
+                { label: 'YouTube',   color: 'bg-[#FF0000]', href: process.env.NEXT_PUBLIC_YT },
+                { label: 'Facebook',  color: 'bg-[#1877F2]', href: process.env.NEXT_PUBLIC_FB },
+                { label: 'WhatsApp',  color: 'bg-[#25D366]', href: process.env.NEXT_PUBLIC_WA },
               ].map(r => (
-                <a key={r.label} href={r.env ?? '#'} target="_blank" rel="noopener noreferrer"
+                <a key={r.label} href={r.href ?? '#'} target="_blank" rel="noopener noreferrer"
                   className={`${r.color} text-white text-xs font-medium px-3 py-1.5 rounded w-fit opacity-80 hover:opacity-100 transition-opacity`}>
                   {r.label}
                 </a>
@@ -66,13 +68,17 @@ export default function Footer() {
             </div>
           </div>
         </div>
+
         <div className="border-t border-white/8 pt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-white/25">
           <span>© {year} Ñande Stream · Asunción, Paraguay</span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Link href="/politica-editorial" className="hover:text-white/50 transition-colors">Política editorial</Link>
+            <span>·</span>
+            <Link href="/contacto" className="hover:text-white/50 transition-colors">Contacto</Link>
+            <span>·</span>
             <div className="flex h-2 w-4 rounded-sm overflow-hidden">
-              <span className="flex-1 bg-rojo" /><span className="flex-1 bg-white/50" /><span className="flex-1 bg-azul" />
+              <span className="flex-1 bg-rojo"/><span className="flex-1 bg-white/50"/><span className="flex-1 bg-azul"/>
             </div>
-            <span>nandestream.com</span>
           </div>
         </div>
       </div>
