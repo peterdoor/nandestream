@@ -1,6 +1,5 @@
-import { getNotasRecientes } from '@/lib/supabase';
-import { getConfig } from '@/lib/supabase';
-import Ticker from './Ticker';
+import { getNotasRecientes, getConfig } from '@/lib/supabase';
+import TickerClient from './TickerClient';
 
 export default async function TickerWrapper() {
   const [notas, config] = await Promise.all([
@@ -8,10 +7,12 @@ export default async function TickerWrapper() {
     getConfig(),
   ]);
 
-  const titulares = [
-    ...notas.map(n => n.titulo),
-    ...(config.ticker_extra ? config.ticker_extra.split('·').map(s => s.trim()).filter(Boolean) : []),
+  const items = [
+    ...notas.map(n => ({ titulo: n.titulo, slug: n.slug })),
+    ...(config.ticker_extra
+      ? config.ticker_extra.split('·').map(s => ({ titulo: s.trim(), slug: '' })).filter(i => i.titulo)
+      : []),
   ];
 
-  return <Ticker titulares={titulares} />;
+  return <TickerClient items={items} velocidad={config.ticker_velocidad ?? 25} />;
 }

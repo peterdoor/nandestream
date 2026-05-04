@@ -8,18 +8,35 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
   const [miniPlayer, setMiniPlayer] = useState(false);
   const [miniClosed, setMiniClosed] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const mainIframeRef = useRef<HTMLIFrameElement>(null);
 
   const { stream_activo, youtube_live_id, frase_hero, programa_actual, agenda } = config;
 
   const embedSrc = youtube_live_id
     ? youtube_live_id.startsWith('UC')
-      ? `https://www.youtube.com/embed/live_stream?channel=${youtube_live_id}&autoplay=1`
-      : `https://www.youtube.com/embed/${youtube_live_id}?autoplay=1`
+      ? `https://www.youtube.com/embed/live_stream?channel=${youtube_live_id}&autoplay=1&enablejsapi=1`
+      : `https://www.youtube.com/embed/${youtube_live_id}?autoplay=1&enablejsapi=1`
     : '';
 
   const thumbUrl = youtube_live_id && !youtube_live_id.startsWith('UC')
     ? `https://img.youtube.com/vi/${youtube_live_id}/maxresdefault.jpg`
     : null;
+
+  // Cuando aparece el mini player, mutear el principal via postMessage
+  useEffect(() => {
+    if (!mainIframeRef.current) return;
+    try {
+      if (miniPlayer) {
+        mainIframeRef.current.contentWindow?.postMessage(
+          JSON.stringify({ event: 'command', func: 'mute', args: [] }), '*'
+        );
+      } else {
+        mainIframeRef.current.contentWindow?.postMessage(
+          JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*'
+        );
+      }
+    } catch {}
+  }, [miniPlayer]);
 
   // Observer para detectar cuando el stream sale del viewport
   useEffect(() => {
@@ -40,6 +57,12 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
   function closeMini() {
     setMiniPlayer(false);
     setMiniClosed(true);
+    // Desmutear el principal cuando se cierra el mini
+    try {
+      mainIframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*'
+      );
+    } catch {}
   }
 
   return (
@@ -70,17 +93,14 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
               <div className="rounded-lg overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
                 {playing && embedSrc ? (
                   <iframe
+                    ref={mainIframeRef}
                     className="w-full h-full"
                     src={embedSrc}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
                 ) : stream_activo && youtube_live_id ? (
-                  <button
-                    onClick={handlePlay}
-                    className="relative w-full h-full block group"
-                    aria-label="Ver stream en vivo"
-                  >
+                  <button onClick={handlePlay} className="relative w-full h-full block group" aria-label="Ver stream en vivo">
                     {thumbUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={thumbUrl} alt="Stream" className="w-full h-full object-cover"
@@ -140,7 +160,6 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
                 <p className="text-white/40 text-[0.65rem] uppercase tracking-[0.2em] mb-2">Ñande Stream</p>
                 <h1 className="font-display text-2xl text-white leading-tight">{frase_hero}</h1>
               </div>
-
               {agenda && (
                 <div className="border-t border-white/10 pt-5">
                   <p className="text-white/40 text-[0.65rem] uppercase tracking-[0.2em] mb-3">Próximos programas</p>
@@ -154,7 +173,6 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
                   </div>
                 </div>
               )}
-
               <div className="border-t border-white/10 pt-5">
                 <p className="text-white/40 text-[0.65rem] uppercase tracking-[0.2em] mb-3">Seguinos</p>
                 <div className="flex gap-2 flex-wrap">
@@ -168,36 +186,35 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
         </div>
       </section>
 
-      {/* ── MINI PLAYER FLOTANTE ── */}
+      {/* MINI PLAYER — solo muestra controles, el audio sigue en el principal (muteado) */}
       {playing && embedSrc && miniPlayer && (
-        <div className="fixed bottom-5 right-5 z-[999] shadow-2xl rounded-lg overflow-hidden"
+        <div className="fixed bottom-5 right-5 z-[999] shadow-2xl rounded-lg overflow-hidden bg-black"
           style={{ width: '300px', aspectRatio: '16/9' }}>
-          {/* Header del mini player */}
           <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-2.5 py-1.5 bg-black/70 z-10">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 bg-rojo rounded-full animate-pulse" />
               <span className="text-white text-[0.62rem] font-bold uppercase tracking-wider">En vivo</span>
             </div>
             <div className="flex items-center gap-1">
-              <Link href="/en-vivo"
-                className="text-white/70 hover:text-white text-[0.6rem] px-2 py-1 transition-colors"
-                title="Pantalla completa">
-                ⛶
-              </Link>
-              <button onClick={closeMini}
-                className="text-white/70 hover:text-white text-sm px-1.5 py-0.5 transition-colors"
-                aria-label="Cerrar mini player">
-                ✕
-              </button>
+              <Link href="/en-vivo" className="text-white/70 hover:text-white text-xs px-2 py-1 transition-colors" title="Pantalla completa">⛶</Link>
+              <button onClick={closeMini} className="text-white/70 hover:text-white text-sm px-1.5 py-0.5 transition-colors" aria-label="Cerrar">✕</button>
             </div>
           </div>
-
-          <iframe
-            className="w-full h-full"
-            src={embedSrc}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+          {/* Imagen de fondo en lugar de iframe — evita doble audio */}
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-azul to-black gap-3 pt-6">
+            {thumbUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={thumbUrl} alt="Stream" className="absolute inset-0 w-full h-full object-cover opacity-40" />
+            ) : null}
+            <div className="relative z-10 text-center">
+              <p className="text-white/70 text-xs mb-2">Reproduciendo en pantalla</p>
+              <Link href="/en-vivo"
+                className="inline-flex items-center gap-1.5 bg-rojo hover:bg-rojo-oscuro text-white text-xs font-bold px-4 py-2 rounded transition-colors">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M4 4l16 8-16 8V4z"/></svg>
+                Abrir en pantalla completa
+              </Link>
+            </div>
+          </div>
         </div>
       )}
     </>
