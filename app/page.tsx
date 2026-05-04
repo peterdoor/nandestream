@@ -1,41 +1,35 @@
-import { getNotasDestacadas, getNotasByCategoria, getNotasRecientes, getConfig } from '@/lib/supabase';
+import { getNotasDestacadas, getNotasRecientes, getConfig, getBanners } from '@/lib/supabase';
 import { CATEGORIAS } from '@/lib/types';
 import Link from 'next/link';
-import Image from 'next/image';
-import { tiempoRelativo } from '@/lib/utils';
 import StreamBlock from '@/components/home/StreamBlock';
 import NewsCard from '@/components/news/NewsCard';
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [config, destacadas, recientes, kachiai] = await Promise.all([
+  const [config, destacadas, recientes, banners] = await Promise.all([
     getConfig(),
-    getNotasDestacadas(5),
+    getNotasDestacadas(3),
     getNotasRecientes(8),
-    getNotasByCategoria('kachiai'),
+    getBanners(),
   ]);
 
-  const principal = destacadas[0];
-  const secundarias = destacadas.slice(1, 4);
+  // Recientes excluyendo las destacadas
+  const destacadasIds = new Set(destacadas.map(n => n.id));
+  const masRecientes = recientes.filter(n => !destacadasIds.has(n.id)).slice(0, 6);
 
   return (
     <>
-      {/* ── STREAM BLOCK ── */}
+      {/* STREAM */}
       <StreamBlock config={config} />
 
-      {/* ── NOTICIAS DESTACADAS ── */}
+      {/* DESTACADAS — máximo 3 */}
       {destacadas.length > 0 && (
         <section className="py-10 bg-crema">
           <div className="max-w-7xl mx-auto px-4">
             <SectionHeader title="Destacadas" href="/actualidad" />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-px bg-gris-claro border border-gris-claro">
-              {principal && (
-                <div className="lg:row-span-2 bg-crema">
-                  <NewsCard nota={principal} variant="featured" />
-                </div>
-              )}
-              {secundarias.map(n => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-gris-claro border border-gris-claro">
+              {destacadas.map(n => (
                 <div key={n.id} className="bg-crema">
                   <NewsCard nota={n} variant="normal" />
                 </div>
@@ -45,25 +39,49 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ── SECCIONES NAV ── */}
-      <div className="bg-azul py-4">
+      {/* BANNERS */}
+      {banners.length > 0 && (
+        <div className="bg-gris-claro py-4">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className={`grid gap-4 ${banners.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+              {banners.map(b => (
+                b.link_url ? (
+                  <a key={b.id} href={b.link_url} target="_blank" rel="noopener noreferrer"
+                    className="block rounded overflow-hidden hover:opacity-95 transition-opacity">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={b.imagen_url} alt={b.titulo || 'Banner'} className="w-full object-cover max-h-28 md:max-h-36" />
+                  </a>
+                ) : (
+                  <div key={b.id} className="rounded overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={b.imagen_url} alt={b.titulo || 'Banner'} className="w-full object-cover max-h-28 md:max-h-36" />
+                  </div>
+                )
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SECCIONES NAV */}
+      <div className="bg-azul py-3">
         <div className="max-w-7xl mx-auto px-4 flex items-center gap-2 overflow-x-auto">
           {CATEGORIAS.map(c => (
             <Link key={c.value} href={`/${c.value}`}
-              className="flex-shrink-0 text-[0.72rem] font-bold uppercase tracking-wider text-white/60 hover:text-white border border-white/15 hover:border-white/40 px-4 py-2 rounded transition-all">
+              className="flex-shrink-0 text-[0.72rem] font-bold uppercase tracking-wider text-white/60 hover:text-white border border-white/15 hover:border-white/40 px-4 py-2 rounded transition-all whitespace-nowrap">
               {c.label}
             </Link>
           ))}
         </div>
       </div>
 
-      {/* ── MÁS RECIENTES ── */}
-      {recientes.length > 0 && (
+      {/* MÁS RECIENTES */}
+      {masRecientes.length > 0 && (
         <section className="py-10 bg-gris-claro">
           <div className="max-w-7xl mx-auto px-4">
             <SectionHeader title="Más recientes" href="/actualidad" />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {recientes.slice(0, 4).map(n => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {masRecientes.map(n => (
                 <NewsCard key={n.id} nota={n} variant="normal" />
               ))}
             </div>
@@ -71,21 +89,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ── KACHIAI ── */}
-      {kachiai.length > 0 && (
-        <section className="py-10 bg-crema">
-          <div className="max-w-7xl mx-auto px-4">
-            <SectionHeader title="Kachiai" href="/kachiai" acento />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {kachiai.slice(0, 3).map(n => (
-                <NewsCard key={n.id} nota={n} variant="normal" />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── QUIÉNES SOMOS ── */}
+      {/* QUIÉNES SOMOS */}
       <div className="bg-tinta py-12">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
@@ -119,10 +123,10 @@ export default async function HomePage() {
   );
 }
 
-function SectionHeader({ title, href, acento }: { title: string; href: string; acento?: boolean }) {
+function SectionHeader({ title, href }: { title: string; href: string }) {
   return (
     <div className="flex items-baseline gap-4 mb-6 border-b border-gris-claro pb-3">
-      <h2 className={`font-display text-2xl relative ${acento ? 'text-rojo' : 'text-tinta'}`}>
+      <h2 className="font-display text-2xl text-tinta relative">
         {title}
         <span className="absolute left-0 -bottom-[13px] h-0.5 w-full bg-rojo" />
       </h2>

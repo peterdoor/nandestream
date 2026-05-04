@@ -245,3 +245,70 @@ export async function marcarRssProcessado(id: string): Promise<boolean> {
     return res.ok;
   } catch { return false; }
 }
+
+// ─── BANNERS ──────────────────────────────────────────────────────────────────
+
+export type Banner = {
+  id: string;
+  imagen_url: string;
+  link_url: string;
+  titulo: string;
+  activo: boolean;
+  posicion: number;
+};
+
+const BANNERS_BASE = `${process.env.SUPABASE_URL}/rest/v1/banners`;
+
+export async function getBanners(): Promise<Banner[]> {
+  try {
+    const res = await fetch(
+      `${BANNERS_BASE}?activo=eq.true&order=posicion.asc`,
+      { headers: hdrs(), next: { revalidate: 120 } }
+    );
+    const rows = await res.json();
+    return Array.isArray(rows) ? rows : [];
+  } catch { return []; }
+}
+
+export async function getTodosBanners(): Promise<Banner[]> {
+  try {
+    const res = await fetch(
+      `${BANNERS_BASE}?order=posicion.asc`,
+      { headers: hdrs(true), cache: 'no-store' }
+    );
+    const rows = await res.json();
+    return Array.isArray(rows) ? rows : [];
+  } catch { return []; }
+}
+
+export async function saveBanner(id: string, data: Partial<Banner>): Promise<boolean> {
+  try {
+    const res = await fetch(`${BANNERS_BASE}?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { ...hdrs(true), 'Prefer': 'return=minimal' },
+      body: JSON.stringify(data),
+    });
+    return res.ok;
+  } catch { return false; }
+}
+
+export async function crearBanner(data: Omit<Banner, 'id'>): Promise<boolean> {
+  try {
+    const res = await fetch(BANNERS_BASE, {
+      method: 'POST',
+      headers: hdrs(true),
+      body: JSON.stringify(data),
+    });
+    return res.ok;
+  } catch { return false; }
+}
+
+export async function eliminarBanner(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${BANNERS_BASE}?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: hdrs(true),
+    });
+    return res.ok;
+  } catch { return false; }
+}
