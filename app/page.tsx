@@ -1,49 +1,44 @@
-import { getNotasDestacadas, getNotasRecientes, getConfig, getBanners } from '@/lib/supabase';
+import { getNotasDestacadas, getNotasRecientes, getNotasByCategoria, getConfig, getBanners } from '@/lib/supabase';
 import { CATEGORIAS } from '@/lib/types';
 import Link from 'next/link';
 import StreamBlock from '@/components/home/StreamBlock';
 import NewsCard from '@/components/news/NewsCard';
+import BannerSlot from '@/components/ui/BannerSlot';
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [config, destacadas, recientes, banners] = await Promise.all([
+  const [config, destacadas, recientes, kachiai, bannersFila2, bannersHome] = await Promise.all([
     getConfig(),
     getNotasDestacadas(4),
-    getNotasRecientes(10),
-    getBanners(),
+    getNotasRecientes(12),
+    getNotasByCategoria('kachiai'),
+    getBanners('fila2'),
+    getBanners('home'),
   ]);
 
   const destacadasIds = new Set(destacadas.map(n => n.id));
-  const masRecientes = recientes.filter(n => !destacadasIds.has(n.id)).slice(0, 6);
+  const masRecientes = recientes.filter(n => !destacadasIds.has(n.id));
 
-  // Fila 1: primeras 4 destacadas en 2x2 o 4 columnas
-  const fila1 = destacadas.slice(0, 4);
-
-  // Banners para fila 2
-  const banner1 = banners[0] ?? null;
-  const banner2 = banners[1] ?? null;
-  // Nota del medio en fila 2
+  const banner1 = bannersFila2[0] ?? null;
+  const banner2 = bannersFila2[1] ?? null;
   const notaMedio = masRecientes[0] ?? null;
-  const restRecientes = notaMedio ? masRecientes.slice(1) : masRecientes;
+  const restRecientes = masRecientes.slice(notaMedio ? 1 : 0, 7);
 
   return (
     <>
       {/* STREAM */}
       <StreamBlock config={config} />
 
-      {/* FILA 1 — 4 DESTACADAS */}
-      {fila1.length > 0 && (
+      {/* DESTACADAS — 4 */}
+      {destacadas.length > 0 && (
         <section className="py-10 bg-crema">
           <div className="max-w-7xl mx-auto px-4">
             <SectionHeader title="Destacadas" href="/actualidad" />
             <div className={`grid gap-px bg-gris-claro border border-gris-claro ${
-              fila1.length === 1 ? 'grid-cols-1' :
-              fila1.length === 2 ? 'grid-cols-2' :
-              fila1.length === 3 ? 'grid-cols-3' :
-              'grid-cols-2 md:grid-cols-4'
+              destacadas.length <= 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4'
             }`}>
-              {fila1.map(n => (
+              {destacadas.map(n => (
                 <div key={n.id} className="bg-crema">
                   <NewsCard nota={n} variant="normal" />
                 </div>
@@ -55,32 +50,32 @@ export default async function HomePage() {
 
       {/* FILA 2 — BANNER · NOTA · BANNER */}
       {(banner1 || banner2 || notaMedio) && (
-        <div className="bg-gris-claro py-6">
+        <div className="bg-gris-claro py-5">
           <div className="max-w-7xl mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
-
-              {/* Banner izquierdo */}
-              {banner1 ? (
-                <BannerSlot banner={banner1} />
-              ) : (
-                <div className="hidden md:block" />
-              )}
-
-              {/* Nota del medio */}
+              {banner1
+                ? <BannerSlot {...banner1} className="rounded h-full" />
+                : <div className="hidden md:block" />
+              }
               {notaMedio && (
-                <div className="bg-crema">
+                <div className="bg-crema rounded overflow-hidden">
                   <NewsCard nota={notaMedio} variant="normal" />
                 </div>
               )}
-
-              {/* Banner derecho */}
-              {banner2 ? (
-                <BannerSlot banner={banner2} />
-              ) : (
-                <div className="hidden md:block" />
-              )}
-
+              {banner2
+                ? <BannerSlot {...banner2} className="rounded h-full" />
+                : <div className="hidden md:block" />
+              }
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* BANNER HOME 1 */}
+      {bannersHome[0] && (
+        <div className="bg-crema py-3">
+          <div className="max-w-7xl mx-auto px-4">
+            <BannerSlot {...bannersHome[0]} className="rounded max-h-28 md:max-h-24 w-full" />
           </div>
         </div>
       )}
@@ -103,7 +98,52 @@ export default async function HomePage() {
           <div className="max-w-7xl mx-auto px-4">
             <SectionHeader title="Más recientes" href="/actualidad" />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {restRecientes.map(n => (
+              {restRecientes.slice(0, 3).map(n => (
+                <NewsCard key={n.id} nota={n} variant="normal" />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* BANNER HOME 2 */}
+      {bannersHome[1] && (
+        <div className="bg-gris-claro py-3">
+          <div className="max-w-7xl mx-auto px-4">
+            <BannerSlot {...bannersHome[1]} className="rounded max-h-28 md:max-h-24 w-full" />
+          </div>
+        </div>
+      )}
+
+      {/* KACHIAI */}
+      {kachiai.length > 0 && (
+        <section className="py-10 bg-gris-claro">
+          <div className="max-w-7xl mx-auto px-4">
+            <SectionHeader title="Kachiai" href="/kachiai" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {kachiai.slice(0, 3).map(n => (
+                <NewsCard key={n.id} nota={n} variant="normal" />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* BANNER HOME 3 */}
+      {bannersHome[2] && (
+        <div className="bg-crema py-3">
+          <div className="max-w-7xl mx-auto px-4">
+            <BannerSlot {...bannersHome[2]} className="rounded max-h-28 md:max-h-24 w-full" />
+          </div>
+        </div>
+      )}
+
+      {/* MÁS RECIENTES SEGUNDA FILA */}
+      {restRecientes.length > 3 && (
+        <section className="py-10 bg-crema">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {restRecientes.slice(3, 6).map(n => (
                 <NewsCard key={n.id} nota={n} variant="normal" />
               ))}
             </div>
@@ -143,28 +183,6 @@ export default async function HomePage() {
       </div>
     </>
   );
-}
-
-function BannerSlot({ banner }: { banner: { imagen_url: string; link_url: string; titulo: string } }) {
-  if (!banner.imagen_url) return <div className="hidden md:block" />;
-  const content = (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={banner.imagen_url}
-      alt={banner.titulo || 'Banner'}
-      className="w-full h-full object-cover rounded"
-      style={{ minHeight: '200px', maxHeight: '320px' }}
-    />
-  );
-  if (banner.link_url) {
-    return (
-      <a href={banner.link_url} target="_blank" rel="noopener noreferrer"
-        className="block hover:opacity-95 transition-opacity">
-        {content}
-      </a>
-    );
-  }
-  return <div>{content}</div>;
 }
 
 function SectionHeader({ title, href }: { title: string; href: string }) {

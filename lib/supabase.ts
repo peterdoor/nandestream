@@ -255,14 +255,16 @@ export type Banner = {
   titulo: string;
   activo: boolean;
   posicion: number;
+  tipo: string; // 'fila2' | 'home' | 'sidebar'
 };
 
 const BANNERS_BASE = `${process.env.SUPABASE_URL}/rest/v1/banners`;
 
-export async function getBanners(): Promise<Banner[]> {
+export async function getBanners(tipo?: string): Promise<Banner[]> {
   try {
+    const filtro = tipo ? `&tipo=eq.${tipo}` : '';
     const res = await fetch(
-      `${BANNERS_BASE}?activo=eq.true&order=posicion.asc`,
+      `${BANNERS_BASE}?activo=eq.true${filtro}&order=posicion.asc`,
       { headers: hdrs(), next: { revalidate: 120 } }
     );
     const rows = await res.json();
