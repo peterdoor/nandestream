@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --rojo: #C8102E;
+  --rojo-oscuro: #9B0E23;
+  --azul: #002B7F;
+  --azul-claro: #1A3FA0;
+  --crema: #F5F3EE;
+  --gris-claro: #EDEAE4;
+  --gris-medio: #B0A99A;
+  --tinta: #1A1714;
+  --acento: #D4A017;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--crema);
+  color: var(--tinta);
+  font-family: 'DM Sans', sans-serif;
+}
+.font-display { font-family: 'Playfair Display', Georgia, serif; }
+
+/* Ticker */
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Live pulse */
+@keyframes livepulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200,16,46,0.5); }
+  50%       { box-shadow: 0 0 0 8px rgba(200,16,46,0); }
+}
+.live-pulse { animation: livepulse 2s ease-in-out infinite; }
+
+/* Fade in */
+.fade-in {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+
+/* Rich text notas */
+.prose-nota h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 2rem 0 0.75rem;
+  color: var(--tinta);
+  border-left: 3px solid var(--rojo);
+  padding-left: 0.75rem;
+}
+.prose-nota h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+.prose-nota p  { margin-bottom: 1.25rem; line-height: 1.8; font-size: 1.05rem; }
+.prose-nota a  { color: var(--azul); text-decoration: underline; text-underline-offset: 3px; }
+.prose-nota blockquote {
+  border-left: 3px solid var(--rojo);
+  padding: 0.75rem 1.25rem;
+  font-style: italic;
+  color: #555;
+  margin: 1.5rem 0;
+  background: var(--gris-claro);
+}
+.prose-nota ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+.prose-nota li { margin-bottom: 0.5rem; line-height: 1.7; }
+
+/* Stream badge */
+.badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--rojo);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding: 5px 12px;
+  border-radius: 2px;
+}
+.badge-offline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gris-medio);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding: 5px 12px;
+  border-radius: 2px;
+}
+
+/* Admin newsroom */
+.newsroom-row {
+  display: grid;
+  align-items: center;
+  border-bottom: 1px solid var(--gris-claro);
+  transition: background 0.15s;
+}
+.newsroom-row:hover { background: rgba(237,234,228,0.4); }
+.newsroom-row:last-child { border-bottom: none; }
