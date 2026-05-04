@@ -31,7 +31,7 @@ body {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
-.ticker-inner { animation: ticker-scroll 50s linear infinite; }
+.ticker-inner { animation: ticker-scroll 25s linear infinite; }
 .ticker-inner:hover { animation-play-state: paused; }
 
 /* Live pulse */
