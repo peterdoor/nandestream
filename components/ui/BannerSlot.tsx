@@ -1,11 +1,14 @@
+import React from 'react';
+
 type BannerProps = {
   imagen_url: string;
   link_url: string;
   titulo: string;
   className?: string;
+  style?: React.CSSProperties;
 };
 
-export default function BannerSlot({ imagen_url, link_url, titulo, className = '' }: BannerProps) {
+export default function BannerSlot({ imagen_url, link_url, titulo, className = '', style }: BannerProps) {
   if (!imagen_url) return null;
 
   const img = (
@@ -13,7 +16,8 @@ export default function BannerSlot({ imagen_url, link_url, titulo, className = '
     <img
       src={imagen_url}
       alt={titulo || 'Banner'}
-      className={`w-full object-cover ${className}`}
+      className={`w-full ${className}`}
+      style={style}
     />
   );
 

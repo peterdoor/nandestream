@@ -8,20 +8,24 @@ import BannerSlot from '@/components/ui/BannerSlot';
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [config, destacadas, recientes, kachiai, bannersFila2, bannersHome] = await Promise.all([
+  const [config, destacadas, recientes, kachiai,
+    bannersDestacadas, bannersHome1, bannersHome2] = await Promise.all([
     getConfig(),
     getNotasDestacadas(4),
     getNotasRecientes(12),
     getNotasByCategoria('kachiai'),
-    getBanners('fila2'),
-    getBanners('home'),
+    getBanners('destacadas'),
+    getBanners('home1'),
+    getBanners('home2'),
   ]);
 
   const destacadasIds = new Set(destacadas.map(n => n.id));
   const masRecientes = recientes.filter(n => !destacadasIds.has(n.id));
 
-  const banner1 = bannersFila2[0] ?? null;
-  const banner2 = bannersFila2[1] ?? null;
+  // Banners destacadas: máximo 2
+  const bannerDestIzq = bannersDestacadas[0] ?? null;
+  const bannerDestDer = bannersDestacadas[1] ?? null;
+  // Nota del medio en fila banner·nota·banner
   const notaMedio = masRecientes[0] ?? null;
   const restRecientes = masRecientes.slice(notaMedio ? 1 : 0, 7);
 
@@ -30,7 +34,7 @@ export default async function HomePage() {
       {/* STREAM */}
       <StreamBlock config={config} />
 
-      {/* DESTACADAS — 4 */}
+      {/* DESTACADAS — 4 en grilla 2x2 */}
       {destacadas.length > 0 && (
         <section className="py-10 bg-crema">
           <div className="max-w-7xl mx-auto px-4">
@@ -48,22 +52,25 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* FILA 2 — BANNER · NOTA · BANNER */}
-      {(banner1 || banner2 || notaMedio) && (
+      {/* FILA BANNER·NOTA·BANNER (tipo: destacadas, máx 2) */}
+      {(bannerDestIzq || bannerDestDer || notaMedio) && (
         <div className="bg-gris-claro py-5">
           <div className="max-w-7xl mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
-              {banner1
-                ? <BannerSlot {...banner1} className="rounded h-full" />
+              {/* Banner izquierdo */}
+              {bannerDestIzq
+                ? <BannerSlot {...bannerDestIzq} className="rounded w-full h-full object-cover" style={{ minHeight: '200px' }} />
                 : <div className="hidden md:block" />
               }
+              {/* Nota del medio */}
               {notaMedio && (
                 <div className="bg-crema rounded overflow-hidden">
                   <NewsCard nota={notaMedio} variant="normal" />
                 </div>
               )}
-              {banner2
-                ? <BannerSlot {...banner2} className="rounded h-full" />
+              {/* Banner derecho */}
+              {bannerDestDer
+                ? <BannerSlot {...bannerDestDer} className="rounded w-full h-full object-cover" style={{ minHeight: '200px' }} />
                 : <div className="hidden md:block" />
               }
             </div>
@@ -71,11 +78,13 @@ export default async function HomePage() {
         </div>
       )}
 
-      {/* BANNER HOME 1 */}
-      {bannersHome[0] && (
+      {/* BANNERS HOME 1 — horizontales, múltiples, ordenados */}
+      {bannersHome1.length > 0 && (
         <div className="bg-crema py-3">
-          <div className="max-w-7xl mx-auto px-4">
-            <BannerSlot {...bannersHome[0]} className="rounded max-h-28 md:max-h-24 w-full" />
+          <div className="max-w-7xl mx-auto px-4 flex flex-col gap-3">
+            {bannersHome1.map(b => (
+              <BannerSlot key={b.id} {...b} className="rounded w-full" style={{ maxHeight: '120px', objectFit: 'cover' }} />
+            ))}
           </div>
         </div>
       )}
@@ -92,7 +101,7 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* MÁS RECIENTES */}
+      {/* MÁS RECIENTES — primera tanda */}
       {restRecientes.length > 0 && (
         <section className="py-10 bg-crema">
           <div className="max-w-7xl mx-auto px-4">
@@ -106,11 +115,13 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* BANNER HOME 2 */}
-      {bannersHome[1] && (
+      {/* BANNERS HOME 2 — horizontales, múltiples, entre recientes y kachiai */}
+      {bannersHome2.length > 0 && (
         <div className="bg-gris-claro py-3">
-          <div className="max-w-7xl mx-auto px-4">
-            <BannerSlot {...bannersHome[1]} className="rounded max-h-28 md:max-h-24 w-full" />
+          <div className="max-w-7xl mx-auto px-4 flex flex-col gap-3">
+            {bannersHome2.map(b => (
+              <BannerSlot key={b.id} {...b} className="rounded w-full" style={{ maxHeight: '120px', objectFit: 'cover' }} />
+            ))}
           </div>
         </div>
       )}
@@ -129,16 +140,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* BANNER HOME 3 */}
-      {bannersHome[2] && (
-        <div className="bg-crema py-3">
-          <div className="max-w-7xl mx-auto px-4">
-            <BannerSlot {...bannersHome[2]} className="rounded max-h-28 md:max-h-24 w-full" />
-          </div>
-        </div>
-      )}
-
-      {/* MÁS RECIENTES SEGUNDA FILA */}
+      {/* MÁS RECIENTES — segunda tanda */}
       {restRecientes.length > 3 && (
         <section className="py-10 bg-crema">
           <div className="max-w-7xl mx-auto px-4">
