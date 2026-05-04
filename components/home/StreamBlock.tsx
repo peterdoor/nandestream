@@ -12,28 +12,21 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
 
   const { stream_activo, youtube_live_id, frase_hero, programa_actual, agenda } = config;
 
-  // Cuando hay stream activo: embed del live
-  // Cuando NO hay stream: embed del último video del canal (si hay channel ID)
-  const getEmbedSrc = (autoplay = true) => {
-    if (!youtube_live_id) return '';
-    const ap = autoplay ? '&autoplay=1' : '';
-    if (stream_activo) {
-      return youtube_live_id.startsWith('UC')
-        ? `https://www.youtube.com/embed/live_stream?channel=${youtube_live_id}${ap}&enablejsapi=1`
-        : `https://www.youtube.com/embed/${youtube_live_id}${ap}&enablejsapi=1`;
-    } else {
-      // Último video del canal — YouTube lo sirve automáticamente
-      if (youtube_live_id.startsWith('UC')) {
-        return `https://www.youtube.com/embed?listType=user_uploads&list=${youtube_live_id}${ap}&enablejsapi=1`;
-      }
-      return '';
-    }
-  };
+  // Solo embed cuando hay stream activo
+  const embedSrc = stream_activo && youtube_live_id
+    ? youtube_live_id.startsWith('UC')
+      ? `https://www.youtube.com/embed/live_stream?channel=${youtube_live_id}&autoplay=1&enablejsapi=1`
+      : `https://www.youtube.com/embed/${youtube_live_id}?autoplay=1&enablejsapi=1`
+    : '';
 
-  const embedSrc = getEmbedSrc(true);
   const thumbUrl = youtube_live_id && !youtube_live_id.startsWith('UC')
     ? `https://img.youtube.com/vi/${youtube_live_id}/maxresdefault.jpg`
     : null;
+
+  // Link al canal para cuando no hay stream
+  const canalUrl = youtube_live_id?.startsWith('UC')
+    ? `https://www.youtube.com/channel/${youtube_live_id}`
+    : (process.env.NEXT_PUBLIC_YT ?? '#');
 
   // Mutear principal cuando aparece mini
   useEffect(() => {
@@ -69,7 +62,7 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
   }
 
   // ¿Mostrar player? Sí si hay stream activo O si hay channel ID (muestra último video)
-  const showPlayer = stream_activo || (youtube_live_id?.startsWith('UC') && !stream_activo);
+  const showPlayer = stream_activo && !!youtube_live_id;
 
   return (
     <>
@@ -88,7 +81,7 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
                 ) : (
                   <span className="badge-offline">
                     <span className="w-1.5 h-1.5 bg-white/60 rounded-full" />
-                    {showPlayer ? 'Último programa' : 'Fuera del aire'}
+                    Fuera del aire
                   </span>
                 )}
                 {programa_actual && stream_activo && (
@@ -106,35 +99,28 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
                     allowFullScreen
                   />
                 ) : showPlayer ? (
-                  /* Thumbnail con play */
-                  <button onClick={handlePlay} className="relative w-full h-full block group" aria-label="Reproducir">
+                  /* Thumbnail con play — solo cuando hay stream activo */
+                  <button onClick={handlePlay} className="relative w-full h-full block group" aria-label="Ver en vivo">
                     {thumbUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={thumbUrl} alt="Video" className="w-full h-full object-cover"
+                      <img src={thumbUrl} alt="Stream" className="w-full h-full object-cover"
                         onError={e => { e.currentTarget.style.display = 'none'; }} />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-azul to-[#000820]" />
                     )}
                     <div className="absolute inset-0 bg-black/30 group-hover:bg-black/45 transition-colors" />
-                    {stream_activo && (
-                      <div className="absolute top-4 left-4 flex items-center gap-2 bg-rojo text-white text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-sm">
-                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                        En vivo
-                      </div>
-                    )}
-                    {!stream_activo && (
-                      <div className="absolute top-4 left-4 bg-black/50 text-white/80 text-xs px-3 py-1.5 rounded-sm">
-                        Último programa
-                      </div>
-                    )}
+                    <div className="absolute top-4 left-4 flex items-center gap-2 bg-rojo text-white text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-sm">
+                      <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                      En vivo
+                    </div>
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                      <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform ${stream_activo ? 'bg-rojo live-pulse' : 'bg-white/20 backdrop-blur'}`}>
+                      <div className="w-16 h-16 bg-rojo rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform live-pulse">
                         <svg width="26" height="26" viewBox="0 0 24 24" fill="white" className="ml-1.5">
                           <path d="M4 4l16 8-16 8V4z"/>
                         </svg>
                       </div>
                       <span className="text-white/80 text-sm font-medium bg-black/40 px-4 py-1.5 rounded-full">
-                        {stream_activo ? 'Tocá para ver la transmisión' : 'Ver último programa'}
+                        Tocá para ver la transmisión
                       </span>
                     </div>
                   </button>
@@ -157,10 +143,17 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
               <div className="flex items-center gap-3 mt-4 flex-wrap">
                 {showPlayer && !playing && (
                   <button onClick={handlePlay}
-                    className={`flex items-center gap-2 text-white font-bold px-6 py-3 rounded transition-colors text-sm ${stream_activo ? 'bg-rojo hover:bg-rojo-oscuro live-pulse' : 'bg-white/15 hover:bg-white/25'}`}>
+                    className="flex items-center gap-2 bg-rojo hover:bg-rojo-oscuro text-white font-bold px-6 py-3 rounded transition-colors text-sm live-pulse">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M4 4l16 8-16 8V4z"/></svg>
-                    {stream_activo ? 'Ver en vivo' : 'Ver último programa'}
+                    Ver en vivo
                   </button>
+                )}
+                {!stream_activo && youtube_live_id && (
+                  <a href={canalUrl} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 bg-[#FF0000] hover:opacity-90 text-white font-bold px-6 py-3 rounded transition-colors text-sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M4 4l16 8-16 8V4z"/></svg>
+                    Ver canal en YouTube
+                  </a>
                 )}
                 <Link href="/en-vivo"
                   className="flex items-center gap-2 border border-white/25 hover:border-white/50 text-white/75 hover:text-white font-medium px-5 py-3 rounded transition-colors text-sm">
