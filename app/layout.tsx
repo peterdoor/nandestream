@@ -3,6 +3,7 @@ import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import TickerWrapper from '@/components/layout/TickerWrapper';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: {
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <TickerWrapper />
         <main>{children}</main>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );
