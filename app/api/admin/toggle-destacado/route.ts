@@ -9,12 +9,11 @@ export async function POST(req: NextRequest) {
 
   const { id, destacado } = await req.json();
 
-  // Si quiere destacar, verificar que no haya más de 3
   if (destacado) {
     const actuales = await getNotasDestacadas(10);
-    if (actuales.length >= 3 && !actuales.find(n => n.id === id)) {
+    if (actuales.length >= 4 && !actuales.find(n => n.id === id)) {
       return NextResponse.json({
-        error: 'Ya hay 3 notas destacadas en portada. Quitá una antes de agregar otra.',
+        error: 'Ya hay 4 notas destacadas en portada. Quitá una antes de agregar otra.',
         limite: true,
       }, { status: 400 });
     }

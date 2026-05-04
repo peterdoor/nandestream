@@ -93,10 +93,10 @@ export default function AdminNotasPage() {
         </div>
 
         {/* Indicador de destacadas */}
-        <div className={`flex items-center gap-2 mb-5 px-3 py-2 rounded text-xs font-medium ${destacadasCount >= 3 ? 'bg-yellow-50 border border-yellow-200 text-yellow-700' : 'bg-green-50 border border-green-200 text-green-700'}`}>
+        <div className={`flex items-center gap-2 mb-5 px-3 py-2 rounded text-xs font-medium ${destacadasCount >= 4 ? 'bg-yellow-50 border border-yellow-200 text-yellow-700' : 'bg-green-50 border border-green-200 text-green-700'}`}>
           <span>★ Portada:</span>
-          <span className="font-bold">{destacadasCount}/3 notas destacadas</span>
-          {destacadasCount >= 3 && <span>— Para destacar otra, quitá una primero</span>}
+          <span className="font-bold">{destacadasCount}/4 notas destacadas</span>
+          {destacadasCount >= 4 && <span>— Límite máximo de portada alcanzado</span>}
         </div>
 
         {msgError && (
@@ -168,16 +168,16 @@ export default function AdminNotasPage() {
                     {/* Toggle portada */}
                     <button
                       onClick={() => toggleDestacado(nota.id, nota.destacado)}
-                      disabled={!nota.destacado && destacadasCount >= 3}
+                      disabled={!nota.destacado && destacadasCount >= 4}
                       title={
-                        !nota.destacado && destacadasCount >= 3
+                        !nota.destacado && destacadasCount >= 4
                           ? 'Límite de 3 alcanzado'
                           : nota.destacado ? 'Quitar de portada' : 'Poner en portada'
                       }
                       className={`w-8 h-8 rounded flex items-center justify-center text-sm transition-colors ${
                         nota.destacado
                           ? 'bg-acento/15 text-acento hover:bg-red-50 hover:text-red-400'
-                          : destacadasCount >= 3
+                          : destacadasCount >= 4
                             ? 'bg-gris-claro text-gris-claro cursor-not-allowed'
                             : 'bg-gris-claro text-gris-medio hover:bg-acento/15 hover:text-acento'
                       }`}>

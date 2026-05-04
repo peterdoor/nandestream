@@ -9,27 +9,41 @@ export const revalidate = 60;
 export default async function HomePage() {
   const [config, destacadas, recientes, banners] = await Promise.all([
     getConfig(),
-    getNotasDestacadas(3),
-    getNotasRecientes(8),
+    getNotasDestacadas(4),
+    getNotasRecientes(10),
     getBanners(),
   ]);
 
-  // Recientes excluyendo las destacadas
   const destacadasIds = new Set(destacadas.map(n => n.id));
   const masRecientes = recientes.filter(n => !destacadasIds.has(n.id)).slice(0, 6);
+
+  // Fila 1: primeras 4 destacadas en 2x2 o 4 columnas
+  const fila1 = destacadas.slice(0, 4);
+
+  // Banners para fila 2
+  const banner1 = banners[0] ?? null;
+  const banner2 = banners[1] ?? null;
+  // Nota del medio en fila 2
+  const notaMedio = masRecientes[0] ?? null;
+  const restRecientes = notaMedio ? masRecientes.slice(1) : masRecientes;
 
   return (
     <>
       {/* STREAM */}
       <StreamBlock config={config} />
 
-      {/* DESTACADAS — máximo 3 */}
-      {destacadas.length > 0 && (
+      {/* FILA 1 — 4 DESTACADAS */}
+      {fila1.length > 0 && (
         <section className="py-10 bg-crema">
           <div className="max-w-7xl mx-auto px-4">
             <SectionHeader title="Destacadas" href="/actualidad" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-gris-claro border border-gris-claro">
-              {destacadas.map(n => (
+            <div className={`grid gap-px bg-gris-claro border border-gris-claro ${
+              fila1.length === 1 ? 'grid-cols-1' :
+              fila1.length === 2 ? 'grid-cols-2' :
+              fila1.length === 3 ? 'grid-cols-3' :
+              'grid-cols-2 md:grid-cols-4'
+            }`}>
+              {fila1.map(n => (
                 <div key={n.id} className="bg-crema">
                   <NewsCard nota={n} variant="normal" />
                 </div>
@@ -39,25 +53,33 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* BANNERS */}
-      {banners.length > 0 && (
-        <div className="bg-gris-claro py-4">
+      {/* FILA 2 — BANNER · NOTA · BANNER */}
+      {(banner1 || banner2 || notaMedio) && (
+        <div className="bg-gris-claro py-6">
           <div className="max-w-7xl mx-auto px-4">
-            <div className={`grid gap-4 ${banners.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
-              {banners.map(b => (
-                b.link_url ? (
-                  <a key={b.id} href={b.link_url} target="_blank" rel="noopener noreferrer"
-                    className="block rounded overflow-hidden hover:opacity-95 transition-opacity">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={b.imagen_url} alt={b.titulo || 'Banner'} className="w-full object-cover max-h-28 md:max-h-36" />
-                  </a>
-                ) : (
-                  <div key={b.id} className="rounded overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={b.imagen_url} alt={b.titulo || 'Banner'} className="w-full object-cover max-h-28 md:max-h-36" />
-                  </div>
-                )
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
+
+              {/* Banner izquierdo */}
+              {banner1 ? (
+                <BannerSlot banner={banner1} />
+              ) : (
+                <div className="hidden md:block" />
+              )}
+
+              {/* Nota del medio */}
+              {notaMedio && (
+                <div className="bg-crema">
+                  <NewsCard nota={notaMedio} variant="normal" />
+                </div>
+              )}
+
+              {/* Banner derecho */}
+              {banner2 ? (
+                <BannerSlot banner={banner2} />
+              ) : (
+                <div className="hidden md:block" />
+              )}
+
             </div>
           </div>
         </div>
@@ -76,12 +98,12 @@ export default async function HomePage() {
       </div>
 
       {/* MÁS RECIENTES */}
-      {masRecientes.length > 0 && (
-        <section className="py-10 bg-gris-claro">
+      {restRecientes.length > 0 && (
+        <section className="py-10 bg-crema">
           <div className="max-w-7xl mx-auto px-4">
             <SectionHeader title="Más recientes" href="/actualidad" />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {masRecientes.map(n => (
+              {restRecientes.map(n => (
                 <NewsCard key={n.id} nota={n} variant="normal" />
               ))}
             </div>
@@ -121,6 +143,28 @@ export default async function HomePage() {
       </div>
     </>
   );
+}
+
+function BannerSlot({ banner }: { banner: { imagen_url: string; link_url: string; titulo: string } }) {
+  if (!banner.imagen_url) return <div className="hidden md:block" />;
+  const content = (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={banner.imagen_url}
+      alt={banner.titulo || 'Banner'}
+      className="w-full h-full object-cover rounded"
+      style={{ minHeight: '200px', maxHeight: '320px' }}
+    />
+  );
+  if (banner.link_url) {
+    return (
+      <a href={banner.link_url} target="_blank" rel="noopener noreferrer"
+        className="block hover:opacity-95 transition-opacity">
+        {content}
+      </a>
+    );
+  }
+  return <div>{content}</div>;
 }
 
 function SectionHeader({ title, href }: { title: string; href: string }) {
