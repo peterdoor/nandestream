@@ -7,7 +7,7 @@ type RssItem = {
   imagen_url: string; fecha: string; fuente: string;
 };
 
-export default function DeportesRssPage() {
+export default function KachiaiRssPage() {
   const [feedUrls, setFeedUrls] = useState('');
   const [items, setItems] = useState<RssItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -29,7 +29,7 @@ export default function DeportesRssPage() {
         body: JSON.stringify({ urls }),
       });
       const data = await res.json();
-      if (!data.items?.length) setError('No se encontraron noticias en esos feeds. Verificá las URLs.');
+      if (!data.items?.length) setError('No se encontraron noticias. Verificá las URLs.');
       else setItems(data.items);
     } catch { setError('Error de conexión'); }
     finally { setLoading(false); }
@@ -41,7 +41,7 @@ export default function DeportesRssPage() {
       const res = await fetch('/api/admin/autonota', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tema: item.titulo, datos: item.bajada, categoria: 'deportes' }),
+        body: JSON.stringify({ tema: item.titulo, datos: item.bajada, categoria: 'kachiai' }),
       });
       const data = await res.json();
       if (data.cuerpo) setGeneratedNote({ ...data, imagen_url: item.imagen_url || '' });
@@ -58,7 +58,7 @@ export default function DeportesRssPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...generatedNote,
-        categoria: 'deportes',
+        categoria: 'kachiai',
         estado: 'borrador',
         destacado: true,
         autor: 'Redacción Ñande Stream',
@@ -75,8 +75,10 @@ export default function DeportesRssPage() {
   return (
     <AdminLayout>
       <div className="max-w-4xl mx-auto px-4 py-6">
-        <h1 className="font-display text-xl text-tinta mb-2">RSS Deportes</h1>
-        <p className="text-sm text-gris-medio mb-6">Pegá URLs de feeds RSS de deportes, elegí una noticia y Groq genera el borrador.</p>
+        <h1 className="font-display text-xl text-tinta mb-2">RSS Kachiai</h1>
+        <p className="text-sm text-gris-medio mb-6">
+          Pegá URLs de feeds RSS de cultura, entretenimiento, chisme o humor. Groq reformula en tono Kachiai paraguayo.
+        </p>
 
         {saved && <Alert type="ok">Borrador guardado. Revisalo en Notas.</Alert>}
         {error && <Alert type="error">{error}</Alert>}
@@ -89,11 +91,11 @@ export default function DeportesRssPage() {
             value={feedUrls}
             onChange={e => { setFeedUrls(e.target.value); setError(''); }}
             rows={4}
-            placeholder={"https://www.ejemplo.com/rss/deportes.xml\nhttps://www.otro.com/feed/deportes"}
+            placeholder={"https://www.ejemplo.com/rss/entretenimiento.xml\nhttps://www.otro.com/feed/cultura"}
             className="w-full border border-gris-claro rounded px-3 py-2 text-sm font-mono focus:border-azul outline-none resize-none bg-white"
           />
           <button onClick={fetchRSS} disabled={loading}
-            className="mt-3 w-full bg-azul hover:bg-azul-claro text-white font-bold py-2.5 rounded text-sm disabled:opacity-50 transition-colors">
+            className="mt-3 w-full bg-rojo hover:bg-rojo-oscuro text-white font-bold py-2.5 rounded text-sm disabled:opacity-50 transition-colors">
             {loading ? 'Cargando feeds...' : 'Cargar noticias'}
           </button>
         </div>
@@ -110,7 +112,7 @@ export default function DeportesRssPage() {
                   {item.bajada && <p className="text-xs text-gris-medio line-clamp-1">{item.bajada}</p>}
                 </div>
                 <button onClick={() => generarNota(item)}
-                  className="flex-shrink-0 text-xs font-semibold text-azul border border-azul/25 hover:bg-azul hover:text-white px-3 py-2 rounded transition-colors">
+                  className="flex-shrink-0 text-xs font-semibold text-rojo border border-rojo/25 hover:bg-rojo hover:text-white px-3 py-2 rounded transition-colors">
                   Generar nota
                 </button>
               </div>
@@ -120,14 +122,14 @@ export default function DeportesRssPage() {
 
         {generating && (
           <div className="bg-white rounded-lg p-8 text-center text-gris-medio text-sm shadow-sm">
-            Generando nota con IA...
+            Generando nota en tono Kachiai...
           </div>
         )}
 
         {generatedNote && selected && (
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="px-4 py-3 bg-gris-claro border-b border-gris-claro">
-              <p className="text-xs font-bold uppercase tracking-wider text-gris-medio">Borrador — revisá antes de guardar</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-gris-medio">Borrador Kachiai — revisá antes de guardar</p>
             </div>
             <div className="p-5">
               <h2 className="font-display text-xl text-tinta mb-2">{generatedNote.titulo}</h2>
