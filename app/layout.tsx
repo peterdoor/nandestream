@@ -3,6 +3,7 @@ import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import TickerWrapper from '@/components/layout/TickerWrapper';
+import PuenteBar from '@/components/layout/PuenteBar';
 
 export const metadata: Metadata = {
   title: {
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Navbar />
         <TickerWrapper />
+        <PuenteBar />
         <main>{children}</main>
         <Footer />
       </body>
