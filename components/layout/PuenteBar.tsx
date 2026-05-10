@@ -2,24 +2,24 @@
 import { useState, useEffect } from 'react';
 
 type DirInfo = { mins: number; condicion: string; color: string } | null;
-
-type PuenteData = {
-  hacia_encarnacion: DirInfo;
-  hacia_posadas: DirInfo;
-};
+type PuenteData = { hacia_encarnacion: DirInfo; hacia_posadas: DirInfo; };
 
 export default function PuenteBar() {
   const [data, setData] = useState<PuenteData | null>(null);
+  const [hora, setHora] = useState('');
 
   useEffect(() => {
     fetch('/api/puente')
       .then(r => r.json())
-      .then(setData)
+      .then(d => {
+        setData(d);
+        const now = new Date();
+        setHora(now.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' }));
+      })
       .catch(() => {});
   }, []);
 
   if (!data) return null;
-
   const { hacia_encarnacion, hacia_posadas } = data;
   if (!hacia_encarnacion && !hacia_posadas) return null;
 
@@ -57,7 +57,7 @@ export default function PuenteBar() {
 
           {/* Hacia Posadas */}
           {hacia_posadas && (
-            <div className="flex items-center gap-3 px-5 py-2 flex-1">
+            <div className="flex items-center gap-3 px-5 py-2 border-r border-white/8 flex-1">
               <div>
                 <p className="text-[0.58rem] text-white/40 uppercase tracking-wider mb-0.5">← Posadas</p>
                 <div className="flex items-center gap-2">
@@ -73,9 +73,15 @@ export default function PuenteBar() {
             </div>
           )}
 
-          {/* Actualización */}
-          <div className="hidden md:flex items-center px-4 text-[0.6rem] text-white/25 flex-shrink-0">
-            Se actualiza cada 2 horas
+          {/* Actualizado + powered by */}
+          <div className="flex flex-col justify-center px-4 py-1.5 flex-shrink-0">
+            {hora && (
+              <p className="text-[0.6rem] text-white/40 whitespace-nowrap">Actualizado: {hora}</p>
+            )}
+            <a href="https://theaimanac.com/" target="_blank" rel="noopener noreferrer"
+              className="text-[0.55rem] text-white/25 hover:text-white/50 transition-colors whitespace-nowrap mt-0.5">
+              Powered by: theaimanac.com
+            </a>
           </div>
 
         </div>
