@@ -1,22 +1,28 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { CATEGORIAS } from '@/lib/types';
+
+const LOGO_ICONO = 'https://vtyaetjeeitviczwzink.supabase.co/storage/v1/object/public/imagenes/nande-logoreducido01.png';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      {/* Nav principal */}
       <nav className="sticky top-0 z-50 bg-crema/97 backdrop-blur border-b-2 border-rojo h-[62px] flex items-center">
         <div className="max-w-7xl mx-auto px-4 w-full flex items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-9 h-9 bg-azul rounded flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                <path d="M4 4l16 8-16 8V4z"/>
-              </svg>
+            <div className="w-9 h-9 flex items-center justify-center flex-shrink-0">
+              <Image
+                src={LOGO_ICONO}
+                alt="Ñande Stream"
+                width={36}
+                height={36}
+                className="object-contain"
+              />
             </div>
             <div className="leading-tight">
               <span className="block font-display font-bold text-lg text-azul tracking-tight">Ñande Stream</span>
@@ -28,27 +34,21 @@ export default function Navbar() {
           <ul className="hidden lg:flex items-center gap-0.5">
             {CATEGORIAS.map(s => (
               <li key={s.value}>
-                <Link
-                  href={`/${s.value}`}
-                  className="text-[0.75rem] font-medium uppercase tracking-wider px-3 py-2 rounded hover:bg-rojo hover:text-white transition-all text-tinta"
-                >
+                <Link href={`/${s.value}`}
+                  className="text-[0.75rem] font-medium uppercase tracking-wider px-3 py-2 rounded hover:bg-rojo hover:text-white transition-all text-tinta">
                   {s.label}
                 </Link>
               </li>
             ))}
             <li>
-              <Link
-                href="/quienes-somos"
-                className="text-[0.75rem] font-medium uppercase tracking-wider px-3 py-2 rounded hover:bg-rojo hover:text-white transition-all text-tinta"
-              >
+              <Link href="/quienes-somos"
+                className="text-[0.75rem] font-medium uppercase tracking-wider px-3 py-2 rounded hover:bg-rojo hover:text-white transition-all text-tinta">
                 Quiénes somos
               </Link>
             </li>
             <li className="ml-2">
-              <Link
-                href="/en-vivo"
-                className="flex items-center gap-2 bg-rojo text-white text-[0.72rem] font-bold uppercase tracking-wider px-4 py-2 rounded live-pulse"
-              >
+              <Link href="/en-vivo"
+                className="flex items-center gap-2 bg-rojo text-white text-[0.72rem] font-bold uppercase tracking-wider px-4 py-2 rounded live-pulse">
                 <span className="w-1.5 h-1.5 bg-white rounded-full" />
                 En vivo
               </Link>
@@ -56,11 +56,7 @@ export default function Navbar() {
           </ul>
 
           {/* Hamburger mobile */}
-          <button
-            className="lg:hidden flex flex-col gap-1.5 p-2"
-            onClick={() => setOpen(true)}
-            aria-label="Abrir menú"
-          >
+          <button className="lg:hidden flex flex-col gap-1.5 p-2" onClick={() => setOpen(true)} aria-label="Abrir menú">
             <span className="block w-5 h-0.5 bg-tinta" />
             <span className="block w-5 h-0.5 bg-tinta" />
             <span className="block w-5 h-0.5 bg-tinta" />
@@ -72,7 +68,10 @@ export default function Navbar() {
       {open && (
         <div className="fixed inset-0 z-[200] bg-crema flex flex-col">
           <div className="flex items-center justify-between px-4 py-4 border-b border-gris-claro">
-            <span className="font-display font-bold text-azul text-lg">Ñande Stream</span>
+            <div className="flex items-center gap-2">
+              <Image src={LOGO_ICONO} alt="Ñande Stream" width={32} height={32} className="object-contain" />
+              <span className="font-display font-bold text-azul text-lg">Ñande Stream</span>
+            </div>
             <button onClick={() => setOpen(false)} className="text-2xl text-tinta p-1" aria-label="Cerrar">✕</button>
           </div>
           <div className="flex flex-col p-4 gap-1">
