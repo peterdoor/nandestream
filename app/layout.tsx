@@ -4,30 +4,32 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import TickerWrapper from '@/components/layout/TickerWrapper';
 import PuenteBar from '@/components/layout/PuenteBar';
+import { getConfig } from '@/lib/supabase';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Ñande Stream – Información Nacional',
-    template: '%s | Ñande Stream',
+    default: 'Nande Stream - Informacion Nacional',
+    template: '%s | Nande Stream',
   },
-  description: 'Canal paraguayo de streaming político e institucional. Análisis, actualidad y conversación pública sobre el Paraguay.',
+  description: 'Canal paraguayo de streaming politico e institucional.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nandestream.com'),
-  openGraph: {
-    siteName: 'Ñande Stream',
-    type: 'website',
-    locale: 'es_PY',
-  },
+  openGraph: { siteName: 'Nande Stream', type: 'website', locale: 'es_PY' },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const config = await getConfig();
+
   return (
     <html lang="es">
       <body>
-        <Navbar />
+        <Navbar
+          youtubeUrl={config.youtube_url}
+          whatsappUrl={config.whatsapp_url}
+        />
         <TickerWrapper />
         <PuenteBar />
         <main>{children}</main>
-        <Footer />
+        <Footer config={config} />
       </body>
     </html>
   );
