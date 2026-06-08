@@ -11,7 +11,7 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
   const mainIframeRef = useRef<HTMLIFrameElement>(null);
 
   const { stream_activo, youtube_live_id, frase_hero, programa_actual, agenda,
-          youtube_url, facebook_url, whatsapp_url } = config;
+          youtube_url, facebook_url, whatsapp_url, instagram_url } = config;
 
   const embedSrc = stream_activo && youtube_live_id
     ? youtube_live_id.startsWith('UC')
@@ -30,9 +30,10 @@ export default function StreamBlock({ config }: { config: SiteConfig }) {
   const showPlayer = stream_activo && !!youtube_live_id;
 
   const redes = [
-    { label: 'YouTube',  color: 'bg-[#FF0000]', href: youtube_url },
-    { label: 'Facebook', color: 'bg-[#1877F2]', href: facebook_url },
-    { label: 'WhatsApp', color: 'bg-[#25D366]', href: whatsapp_url },
+    { label: 'YouTube',   color: 'bg-[#FF0000]', href: youtube_url },
+    { label: 'Facebook',  color: 'bg-[#1877F2]', href: facebook_url },
+    { label: 'Instagram', color: 'bg-[#E1306C]', href: instagram_url },
+    { label: 'WhatsApp',  color: 'bg-[#25D366]', href: whatsapp_url },
   ].filter(r => r.href);
 
   useEffect(() => {

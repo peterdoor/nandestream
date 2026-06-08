@@ -4,7 +4,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import TickerWrapper from '@/components/layout/TickerWrapper';
 import PuenteBar from '@/components/layout/PuenteBar';
-import RedesBotones from '@/components/layout/WhatsAppButton';
+import WhatsAppButton from '@/components/layout/WhatsAppButton';
 import { getConfig } from '@/lib/supabase';
 
 export const metadata: Metadata = {
@@ -16,7 +16,6 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const config = await getConfig();
-
   return (
     <html lang="es">
       <body>
@@ -25,12 +24,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <PuenteBar />
         <main>{children}</main>
         <Footer config={config} />
-        <RedesBotones
-          whatsappUrl={config.whatsapp_url}
-          youtubeUrl={config.youtube_url}
-          facebookUrl={config.facebook_url}
-          instagramUrl={config.instagram_url}
-        />
+        <WhatsAppButton href={config.whatsapp_url} />
       </body>
     </html>
   );
