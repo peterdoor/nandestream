@@ -32,25 +32,19 @@ export default function Footer({ config }: Props) {
               <span className="flex-1 bg-rojo"/><span className="flex-1 bg-white/70"/><span className="flex-1 bg-azul"/>
             </div>
           </div>
-
           <div>
             <h4 className="text-white text-[0.7rem] uppercase tracking-widest font-bold mb-4 relative">
-              Secciones
-              <span className="absolute left-0 -bottom-2 w-4 h-0.5 bg-rojo"/>
+              Secciones<span className="absolute left-0 -bottom-2 w-4 h-0.5 bg-rojo"/>
             </h4>
             <ul className="flex flex-col gap-2">
               {CATEGORIAS.map(c => (
-                <li key={c.value}>
-                  <Link href={`/${c.value}`} className="text-xs hover:text-white transition-colors">{c.label}</Link>
-                </li>
+                <li key={c.value}><Link href={`/${c.value}`} className="text-xs hover:text-white transition-colors">{c.label}</Link></li>
               ))}
             </ul>
           </div>
-
           <div>
             <h4 className="text-white text-[0.7rem] uppercase tracking-widest font-bold mb-4 relative">
-              El medio
-              <span className="absolute left-0 -bottom-2 w-4 h-0.5 bg-rojo"/>
+              El medio<span className="absolute left-0 -bottom-2 w-4 h-0.5 bg-rojo"/>
             </h4>
             <ul className="flex flex-col gap-2">
               <li><Link href="/quienes-somos" className="text-xs hover:text-white transition-colors">Quienes somos</Link></li>
@@ -59,11 +53,9 @@ export default function Footer({ config }: Props) {
               <li><Link href="/publicidad" className="text-xs hover:text-white transition-colors">Publicidad</Link></li>
             </ul>
           </div>
-
           <div>
             <h4 className="text-white text-[0.7rem] uppercase tracking-widest font-bold mb-4 relative">
-              Seguinos
-              <span className="absolute left-0 -bottom-2 w-4 h-0.5 bg-rojo"/>
+              Seguinos<span className="absolute left-0 -bottom-2 w-4 h-0.5 bg-rojo"/>
             </h4>
             <div className="flex flex-col gap-2">
               {redes.map(r => (
@@ -75,9 +67,8 @@ export default function Footer({ config }: Props) {
             </div>
           </div>
         </div>
-
         <div className="border-t border-white/8 pt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-white/25">
-          <span>© {year} Nande Stream · Asuncion, Paraguay</span>
+          <span>© {year} Nande Stream · Encarnacion, Paraguay</span>
           <div className="flex items-center gap-3">
             <Link href="/politica-editorial" className="hover:text-white/50 transition-colors">Politica editorial</Link>
             <span>·</span>

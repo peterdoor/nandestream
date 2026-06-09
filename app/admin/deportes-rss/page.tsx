@@ -9,6 +9,9 @@ export default function DeportesRssPage() {
         descripcion="Importa noticias deportivas desde feeds RSS. La IA las reformula en estilo Nande Stream."
         categoria="deportes"
         colorBtn="bg-[#1A5C3A] hover:bg-[#145030]"
+        defaultFeeds={[
+          'https://rss.app/feeds/qSxMkSqzeS2pYyKI.xml',
+        ]}
       />
     </AdminLayout>
   );

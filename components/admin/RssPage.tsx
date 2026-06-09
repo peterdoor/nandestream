@@ -11,10 +11,11 @@ type Props = {
   descripcion: string;
   categoria: string;
   colorBtn?: string;
+  defaultFeeds?: string[];
 };
 
-export default function RssPage({ titulo, descripcion, categoria, colorBtn = 'bg-azul hover:bg-azul-claro' }: Props) {
-  const [feedUrls, setFeedUrls] = useState('');
+export default function RssPage({ titulo, descripcion, categoria, colorBtn = 'bg-azul hover:bg-azul-claro', defaultFeeds = [] }: Props) {
+  const [feedUrls, setFeedUrls] = useState(defaultFeeds.join('\n'));
   const [items, setItems] = useState<RssItem[]>([]);
   const [filtro, setFiltro] = useState('');
   const [loading, setLoading] = useState(false);
@@ -98,8 +99,7 @@ export default function RssPage({ titulo, descripcion, categoria, colorBtn = 'bg
         <textarea
           value={feedUrls}
           onChange={e => { setFeedUrls(e.target.value); setError(''); }}
-          rows={4}
-          placeholder="https://www.ejemplo.com/rss/feed.xml"
+          rows={Math.max(3, defaultFeeds.length + 1)}
           className="w-full border border-gris-claro rounded px-3 py-2 text-sm font-mono focus:border-azul outline-none resize-none bg-white"
         />
         <button onClick={fetchRSS} disabled={loading}
